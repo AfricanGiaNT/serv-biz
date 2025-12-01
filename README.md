@@ -11,7 +11,7 @@ A Next.js application for capturing and managing leads for a plumbing service bu
 - **AI**: OpenAI (GPT-4o-mini)
 - **Notifications**: Telegram Bot (Telegraf)
 - **Rate Limiting**: Upstash Redis
-- **Deployment**: Vercel
+- **Deployment**: Render
 
 ## Project Structure
 
