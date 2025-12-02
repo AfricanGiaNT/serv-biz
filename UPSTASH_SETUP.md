@@ -46,3 +46,5 @@ Upstash free tier includes:
 
 This should be sufficient for the MVP.
 
+
+
