@@ -9,27 +9,30 @@ datasource db {
 }
 
 model Lead {
-  id            String         @id @default(cuid())
-  name          String?
-  phone         String
-  email         String?
-  status        LeadStatus     @default(NEW)
-  urgency       Urgency        @default(NORMAL)
-  priority      Int            @default(5)
-  source        LeadSource     @default(CHATBOT)
-  location      String?
-  serviceArea   String?
-  message       String?
-  notes         String?
-  followUpSent  Boolean        @default(false)
-  followUpAt    DateTime?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  conversations Conversation[]
+  id              String         @id @default(cuid())
+  name            String?
+  phone           String
+  email           String?
+  status          LeadStatus     @default(NEW)
+  urgency         Urgency        @default(NORMAL)
+  priority        Int            @default(5)
+  source          LeadSource     @default(WEBSITE_CHAT)
+  serviceType     String?
+  attachmentUrl   String?
+  location        String?
+  serviceArea     String?
+  message         String?
+  notes           String?
+  followUpSent    Boolean        @default(false)
+  followUpAt      DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  conversations   Conversation[]
 
   @@index([phone])
   @@index([status])
   @@index([urgency])
+  @@index([source])
   @@index([createdAt])
   @@map("leads")
 }
@@ -123,9 +126,12 @@ enum Urgency {
 }
 
 enum LeadSource {
-  CHATBOT
+  CHATBOT          // Keep for backward compatibility with existing data
+  WEBSITE_CHAT
   CONTACT_FORM
+  SERVICES_QUOTE
   TELEGRAM
+  MANUAL
 }
 
 enum MessageRole {

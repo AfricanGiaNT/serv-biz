@@ -9,11 +9,12 @@ interface ServiceCardProps {
   title: string;
   description: string;
   priceRange: string;
+  onInquireClick?: () => void;
 }
 
-export function ServiceCard({ icon: Icon, title, description, priceRange }: ServiceCardProps) {
+export function ServiceCard({ icon: Icon, title, description, priceRange, onInquireClick }: ServiceCardProps) {
   return (
-    <Card className="h-full card-hover border border-[#E5E7EB] bg-white flex flex-col">
+    <Card className="h-full card-hover border border-[#E5E7EB] bg-white flex flex-col cursor-pointer transition-all hover:shadow-lg">
       <CardHeader>
         <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[#FFF7ED]">
           <Icon className="h-6 w-6 text-[#F97316]" />
@@ -24,8 +25,14 @@ export function ServiceCard({ icon: Icon, title, description, priceRange }: Serv
       <CardContent className="flex flex-col flex-grow">
         <p className="text-lg font-semibold text-[#DC2626] mb-4">{priceRange}</p>
         <div className="mt-auto">
-          <DuolingoButton href="/contact" className="w-auto">
-            Enquire Today
+          <DuolingoButton 
+            onClick={(e) => {
+              e.preventDefault();
+              onInquireClick?.();
+            }}
+            className="w-auto"
+          >
+            Request Quote
           </DuolingoButton>
         </div>
       </CardContent>

@@ -13,6 +13,7 @@ import { sanitizeText } from '@/lib/chat-utils';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { sendLeadNotification } from '@/lib/telegram';
+import { createSupabaseServerClient } from '@/lib/supabase';
 
 // Initialize rate limiter (10 requests per minute per IP)
 // Falls back gracefully if Upstash isn't configured
@@ -237,7 +238,9 @@ export async function POST(request: NextRequest) {
             status: isOutOfArea ? 'OUT_OF_AREA' : 'NEW',
             urgency,
             priority,
-            source: 'CHATBOT',
+            source: 'WEBSITE_CHAT',
+            serviceType: null,
+            attachmentUrl: null,
             location: locationText.includes('location') || locationText.includes('area') 
               ? sanitizedMessage 
               : null,
@@ -264,6 +267,40 @@ export async function POST(request: NextRequest) {
             console.error('Failed to send Telegram notification:', error);
             // Don't fail the request if notification fails
           }
+        }
+
+        // Update Supabase analytics_daily_summary for new lead
+        try {
+          const supabase = createSupabaseServerClient();
+          const today = new Date().toISOString().split('T')[0];
+
+          const { data: existing } = await supabase
+            .from('analytics_daily_summary')
+            .select('*')
+            .eq('date', today)
+            .single();
+
+          if (existing) {
+            await supabase
+              .from('analytics_daily_summary')
+              .update({
+                total_leads: existing.total_leads + 1,
+              })
+              .eq('date', today);
+          } else {
+            await supabase
+              .from('analytics_daily_summary')
+              .insert({
+                date: today,
+                total_visits: 0,
+                bounced_visits: 0,
+                total_leads: 1,
+                converted_leads: 0,
+              });
+          }
+        } catch (error) {
+          console.error('Failed to update Supabase analytics:', error);
+          // Don't fail the request if analytics update fails
         }
       }
     }

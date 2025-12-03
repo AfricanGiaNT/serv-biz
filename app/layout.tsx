@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { BottomNav } from "@/components/BottomNav";
 import { ChatProvider } from "@/lib/chat-context";
 import { ChatWidget } from "@/components/ChatWidget";
+import { AnalyticsProvider } from "@/lib/use-analytics";
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -40,13 +41,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${poppins.variable} font-sans`}>
-        <ChatProvider>
-          <Header />
-          <main className="min-h-screen pb-16 md:pb-0">{children}</main>
-          <Footer />
-          <BottomNav />
-          <ChatWidget />
-        </ChatProvider>
+        <AnalyticsProvider>
+          <ChatProvider>
+            <Header />
+            <main className="min-h-screen pb-16 md:pb-0">{children}</main>
+            <Footer />
+            <BottomNav />
+            <ChatWidget />
+          </ChatProvider>
+        </AnalyticsProvider>
       </body>
     </html>
   );

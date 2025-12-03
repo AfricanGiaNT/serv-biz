@@ -6,6 +6,33 @@ import { Redis } from '@upstash/redis';
 import { prisma } from '@/lib/prisma';
 import { normalizePhoneNumber, detectUrgency, isOutOfServiceArea } from '@/lib/chat-utils';
 import { sendLeadNotification } from '@/lib/telegram';
+import { createSupabaseServerClient } from '@/lib/supabase';
+
+/**
+ * Extract email provider from email address
+ */
+function getEmailProvider(email: string): string {
+  const domain = email.split('@')[1]?.toLowerCase();
+  if (!domain) return 'Unknown';
+  
+  const providerMap: Record<string, string> = {
+    'gmail.com': 'Gmail',
+    'googlemail.com': 'Gmail',
+    'outlook.com': 'Outlook',
+    'hotmail.com': 'Outlook',
+    'live.com': 'Outlook',
+    'yahoo.com': 'Yahoo',
+    'yahoo.co.uk': 'Yahoo',
+    'icloud.com': 'iCloud',
+    'me.com': 'iCloud',
+    'mac.com': 'iCloud',
+    'aol.com': 'AOL',
+    'protonmail.com': 'ProtonMail',
+    'zoho.com': 'Zoho',
+  };
+  
+  return providerMap[domain] || domain;
+}
 
 // Initialize rate limiter (3 submissions per hour per IP)
 let ratelimit: Ratelimit | null = null;
@@ -27,6 +54,8 @@ const leadSchema = z.object({
   phone: z.string().min(10).max(20),
   email: z.string().email().optional(),
   message: z.string().min(10).max(500),
+  serviceType: z.string().optional(),
+  source: z.enum(['WEBSITE_CHAT', 'CONTACT_FORM', 'SERVICES_QUOTE', 'TELEGRAM', 'MANUAL']).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -55,18 +84,96 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const body = await request.json();
+    // Check Content-Type to determine how to parse the request
+    const contentType = request.headers.get('content-type') || '';
+    let name: string, phone: string, email: string | undefined, message: string;
+    let serviceType: string | undefined;
+    let source: 'WEBSITE_CHAT' | 'CONTACT_FORM' | 'SERVICES_QUOTE' | 'TELEGRAM' | 'MANUAL' = 'CONTACT_FORM';
+    let imageBuffer: Buffer | null = null;
+    let imageMimeType: string | null = null;
 
-    // Validate input with Zod
-    const validationResult = leadSchema.safeParse(body);
-    if (!validationResult.success) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: validationResult.error.issues },
-        { status: 400 }
-      );
+    if (contentType.includes('multipart/form-data')) {
+      // Parse multipart form data
+      const formData = await request.formData();
+      
+      name = formData.get('name') as string;
+      phone = formData.get('phone') as string;
+      email = formData.get('email') as string || undefined;
+      message = formData.get('message') as string;
+      serviceType = formData.get('serviceType') as string || undefined;
+      const sourceParam = formData.get('source') as string;
+      if (sourceParam && ['WEBSITE_CHAT', 'CONTACT_FORM', 'SERVICES_QUOTE', 'TELEGRAM', 'MANUAL'].includes(sourceParam)) {
+        source = sourceParam as typeof source;
+      }
+      
+      // Handle image if present
+      const imageFile = formData.get('image') as File | null;
+      if (imageFile && imageFile.size > 0) {
+        // Validate image size (5MB max)
+        if (imageFile.size > 5 * 1024 * 1024) {
+          return NextResponse.json(
+            { error: 'Image file is too large. Maximum size is 5MB.' },
+            { status: 400 }
+          );
+        }
+        
+        // Validate image type
+        if (!['image/jpeg', 'image/jpg', 'image/png'].includes(imageFile.type)) {
+          return NextResponse.json(
+            { error: 'Invalid image type. Only JPEG and PNG are allowed.' },
+            { status: 400 }
+          );
+        }
+        
+        // Convert to buffer
+        const arrayBuffer = await imageFile.arrayBuffer();
+        imageBuffer = Buffer.from(arrayBuffer);
+        imageMimeType = imageFile.type;
+      }
+      
+      // Basic validation (Zod would be more complex with FormData)
+      if (!name || name.length < 2 || name.length > 100) {
+        return NextResponse.json(
+          { error: 'Name must be between 2 and 100 characters' },
+          { status: 400 }
+        );
+      }
+      if (!phone || phone.length < 10) {
+        return NextResponse.json(
+          { error: 'Phone number is required' },
+          { status: 400 }
+        );
+      }
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return NextResponse.json(
+          { error: 'Invalid email address' },
+          { status: 400 }
+        );
+      }
+      if (!message || message.length < 10 || message.length > 500) {
+        return NextResponse.json(
+          { error: 'Message must be between 10 and 500 characters' },
+          { status: 400 }
+        );
+      }
+    } else {
+      // Parse JSON (backwards compatibility)
+      const body = await request.json();
+      
+      // Validate input with Zod
+      const validationResult = leadSchema.safeParse(body);
+      if (!validationResult.success) {
+        return NextResponse.json(
+          { error: 'Validation failed', details: validationResult.error.issues },
+          { status: 400 }
+        );
+      }
+
+      ({ name, phone, email, message, serviceType, source: sourceParam } = validationResult.data);
+      if (sourceParam) {
+        source = sourceParam;
+      }
     }
-
-    const { name, phone, email, message } = validationResult.data;
 
     // Sanitize inputs
     const sanitizedName = sanitizeText(name);
@@ -110,6 +217,9 @@ export async function POST(request: NextRequest) {
     const locationText = sanitizedMessage.toLowerCase();
     const isOutOfArea = isOutOfServiceArea(locationText);
 
+    // Get email provider if email provided
+    const emailProvider = sanitizedEmail ? getEmailProvider(sanitizedEmail) : null;
+
     // Create lead in database
     const lead = await prisma.lead.create({
       data: {
@@ -119,12 +229,16 @@ export async function POST(request: NextRequest) {
         status: isOutOfArea ? 'OUT_OF_AREA' : 'NEW',
         urgency,
         priority,
-        source: 'CONTACT_FORM',
+        source: source,
+        serviceType: serviceType ? sanitizeText(serviceType) : null,
+        attachmentUrl: null, // Will be populated if we implement cloud storage for images
         location: null, // Contact form doesn't always have location
         message: sanitizedMessage,
         notes: isOutOfArea
           ? 'Customer submitted via contact form - outside service area'
-          : 'Customer submitted via contact form',
+          : emailProvider 
+            ? `Customer submitted via ${source === 'SERVICES_QUOTE' ? 'services quotation form' : 'contact form'} - Email provider: ${emailProvider}`
+            : `Customer submitted via ${source === 'SERVICES_QUOTE' ? 'services quotation form' : 'contact form'}`,
       },
     });
 
@@ -149,11 +263,45 @@ export async function POST(request: NextRequest) {
     // Send Telegram notification (only if not out of area and has contact info)
     if (!isOutOfArea && normalizedPhone && sanitizedName) {
       try {
-        await sendLeadNotification(lead);
+        await sendLeadNotification(lead, imageBuffer, emailProvider, source, serviceType);
       } catch (error) {
         console.error('Failed to send Telegram notification:', error);
         // Don't fail the request if notification fails
       }
+    }
+
+    // Update Supabase analytics_daily_summary
+    try {
+      const supabase = createSupabaseServerClient();
+      const today = new Date().toISOString().split('T')[0];
+
+      const { data: existing } = await supabase
+        .from('analytics_daily_summary')
+        .select('*')
+        .eq('date', today)
+        .single();
+
+      if (existing) {
+        await supabase
+          .from('analytics_daily_summary')
+          .update({
+            total_leads: existing.total_leads + 1,
+          })
+          .eq('date', today);
+      } else {
+        await supabase
+          .from('analytics_daily_summary')
+          .insert({
+            date: today,
+            total_visits: 0,
+            bounced_visits: 0,
+            total_leads: 1,
+            converted_leads: 0,
+          });
+      }
+    } catch (error) {
+      console.error('Failed to update Supabase analytics:', error);
+      // Don't fail the request if analytics update fails
     }
 
     return NextResponse.json(

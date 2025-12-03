@@ -34,8 +34,9 @@ export async function calculateDailyStats(date: Date = new Date()) {
     const contactedLeads = leads.filter((l: any) => l.status === 'CONTACTED').length;
     const convertedLeads = leads.filter((l: any) => l.status === 'CONVERTED').length;
     const emergencyLeads = leads.filter((l: any) => l.urgency === 'EMERGENCY').length;
-    const chatLeads = leads.filter((l: any) => l.source === 'CHATBOT').length;
-    const formLeads = leads.filter((l: any) => l.source === 'CONTACT_FORM').length;
+    // Update to handle new source enum values (backwards compatible)
+    const chatLeads = leads.filter((l: any) => l.source === 'WEBSITE_CHAT' || l.source === 'CHATBOT').length;
+    const formLeads = leads.filter((l: any) => l.source === 'CONTACT_FORM' || l.source === 'SERVICES_QUOTE').length;
 
     // Calculate average response time (in minutes)
     // This would require tracking when leads were contacted
@@ -205,6 +206,50 @@ export async function updateAIUsageStats(tokens: number, cost: number) {
   } catch (error) {
     console.error('Error updating AI usage stats:', error);
     // Don't throw - this shouldn't break the chat flow
+  }
+}
+
+/**
+ * Get leads breakdown by source and status for a date range
+ */
+export async function getLeadsBreakdown(startDate: Date, endDate: Date) {
+  try {
+    const leads = await prisma.lead.findMany({
+      where: {
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+    });
+
+    // Group by source
+    const leadsBySource = {
+      WEBSITE_CHAT: leads.filter((l: any) => l.source === 'WEBSITE_CHAT').length,
+      CONTACT_FORM: leads.filter((l: any) => l.source === 'CONTACT_FORM').length,
+      SERVICES_QUOTE: leads.filter((l: any) => l.source === 'SERVICES_QUOTE').length,
+      TELEGRAM: leads.filter((l: any) => l.source === 'TELEGRAM').length,
+      MANUAL: leads.filter((l: any) => l.source === 'MANUAL').length,
+    };
+
+    // Group by status
+    const leadsByStatus = {
+      NEW: leads.filter((l: any) => l.status === 'NEW').length,
+      CONTACTED: leads.filter((l: any) => l.status === 'CONTACTED').length,
+      QUOTED: leads.filter((l: any) => l.status === 'QUOTED').length,
+      CONVERTED: leads.filter((l: any) => l.status === 'CONVERTED').length,
+      LOST: leads.filter((l: any) => l.status === 'LOST').length,
+      OUT_OF_AREA: leads.filter((l: any) => l.status === 'OUT_OF_AREA').length,
+    };
+
+    return {
+      leadsBySource,
+      leadsByStatus,
+      totalLeads: leads.length,
+    };
+  } catch (error) {
+    console.error('Error getting leads breakdown:', error);
+    throw error;
   }
 }
 

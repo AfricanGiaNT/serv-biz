@@ -42,20 +42,49 @@ function getUrgencyIndicator(urgency: string): string {
 /**
  * Format lead notification message
  */
-function formatLeadNotification(lead: Lead & { conversations?: (Conversation & { messages?: Message[] })[] }): string {
+function formatLeadNotification(
+  lead: Lead & { conversations?: (Conversation & { messages?: Message[] })[] },
+  emailProvider?: string | null,
+  source?: string,
+  serviceType?: string | null
+): string {
   const urgencyEmoji = getUrgencyIndicator(lead.urgency);
   const urgencyText = lead.urgency === 'EMERGENCY' ? 'EMERGENCY' : lead.urgency === 'URGENT' ? 'URGENT' : 'STANDARD';
 
-  let message = `${urgencyEmoji} NEW LEAD - ${urgencyText}\n\n`;
-  message += `👤 Name: ${lead.name || 'Not provided'}\n`;
+  // Determine if this is a quotation request
+  const isQuotation = source === 'SERVICES_QUOTE' || lead.source === 'SERVICES_QUOTE';
+  const headerText = isQuotation ? 'NEW QUOTATION REQUEST' : 'NEW LEAD';
+
+  let message = `${urgencyEmoji} ${headerText} - ${urgencyText}\n\n`;
+  
+  // Add source information
+  const sourceLabels: Record<string, string> = {
+    WEBSITE_CHAT: 'Website Chat',
+    CONTACT_FORM: 'Contact Form',
+    SERVICES_QUOTE: 'Services Quotation',
+    TELEGRAM: 'Telegram',
+    MANUAL: 'Manual Entry'
+  };
+  const sourceLabel = sourceLabels[lead.source] || lead.source;
+  message += `📍 Source: ${sourceLabel}\n`;
+  
+  if (serviceType || lead.serviceType) {
+    message += `🔧 Service Type: ${serviceType || lead.serviceType}\n`;
+  }
+  
+  message += `\n👤 Name: ${lead.name || 'Not provided'}\n`;
   message += `📞 Phone: ${lead.phone}\n`;
   if (lead.email) {
-    message += `📧 Email: ${lead.email}\n`;
+    if (emailProvider) {
+      message += `📧 Email: ${lead.email} (${emailProvider})\n`;
+    } else {
+      message += `📧 Email: ${lead.email}\n`;
+    }
   }
   if (lead.location) {
     message += `📍 Location: ${lead.location}\n`;
   }
-  message += `\n🚨 Problem: ${lead.message || 'No description'}\n`;
+  message += `\n🚨 ${isQuotation ? 'Request Details' : 'Problem'}: ${lead.message || 'No description'}\n`;
   
   if (lead.notes) {
     message += `\n🤖 AI Notes:\n${lead.notes}\n`;
@@ -70,9 +99,15 @@ function formatLeadNotification(lead: Lead & { conversations?: (Conversation & {
 }
 
 /**
- * Send lead notification to Telegram
+ * Send lead notification to Telegram (with optional image)
  */
-export async function sendLeadNotification(lead: Lead & { conversations?: (Conversation & { messages?: Message[] })[] }) {
+export async function sendLeadNotification(
+  lead: Lead & { conversations?: (Conversation & { messages?: Message[] })[] },
+  imageBuffer?: Buffer | null,
+  emailProvider?: string | null,
+  source?: string,
+  serviceType?: string | null
+) {
   try {
     const authorizedUserId = process.env.TELEGRAM_USER_ID || process.env.AUTHORIZED_TELEGRAM_USER_ID;
     if (!authorizedUserId) {
@@ -81,7 +116,7 @@ export async function sendLeadNotification(lead: Lead & { conversations?: (Conve
     }
 
     const bot = getBot();
-    const message = formatLeadNotification(lead);
+    const message = formatLeadNotification(lead, emailProvider, source, serviceType);
 
     // Create inline keyboard buttons
     const keyboard = Markup.inlineKeyboard([
@@ -94,11 +129,24 @@ export async function sendLeadNotification(lead: Lead & { conversations?: (Conve
       ],
     ]);
 
-    // Send notification
-    const sentMessage = await bot.telegram.sendMessage(authorizedUserId, message, {
-      parse_mode: 'HTML',
-      ...keyboard,
-    });
+    let sentMessage;
+
+    // If image is provided, send photo with caption
+    if (imageBuffer && imageBuffer.length > 0) {
+      sentMessage = await bot.telegram.sendPhoto(
+        authorizedUserId,
+        { source: imageBuffer },
+        {
+          caption: message,
+          ...keyboard,
+        }
+      );
+    } else {
+      // Send text message
+      sentMessage = await bot.telegram.sendMessage(authorizedUserId, message, {
+        ...keyboard,
+      });
+    }
 
     // Save Telegram message ID to lead for future updates
     await prisma.lead.update({

@@ -11,8 +11,18 @@ import {
   Home,
   Toilet,
 } from "lucide-react";
+import { useState } from "react";
+import {
+  ExpandableScreen,
+  ExpandableScreenContent,
+  ExpandableScreenTrigger,
+} from "@/components/ui/expandable-screen";
+import ContactForm from "@/components/ContactForm";
 
 export default function ServicesPage() {
+  const [selectedService, setSelectedService] = useState<{title: string, priceRange: string} | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
   const allServices = [
     {
       icon: Droplet,
@@ -92,9 +102,67 @@ export default function ServicesPage() {
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {allServices.map((service, index) => (
-          <ServiceCard key={index} {...service} />
-        ))}
+        {allServices.map((service, index) => {
+          const serviceId = `service-${index}`;
+          return (
+            <ExpandableScreen
+              key={index}
+              layoutId={serviceId}
+              triggerRadius="12px"
+              contentRadius="24px"
+              onExpandChange={(expanded) => {
+                if (expanded) {
+                  setSelectedService(service);
+                  setExpandedId(serviceId);
+                } else {
+                  setSelectedService(null);
+                  setExpandedId(null);
+                }
+              }}
+            >
+              <ExpandableScreenTrigger>
+                <ServiceCard 
+                  {...service}
+                  onInquireClick={() => {
+                    setSelectedService(service);
+                  }}
+                />
+              </ExpandableScreenTrigger>
+
+              <ExpandableScreenContent className="bg-gradient-to-br from-[#F97316] to-[#DC2626]">
+                <div className="container mx-auto px-4 py-8 h-full overflow-y-auto">
+                  <div className="max-w-2xl mx-auto">
+                    {/* Header */}
+                    <div className="text-center mb-8 text-white">
+                      <h2 className="text-3xl md:text-4xl font-bold mb-2">
+                        Request a Quote
+                      </h2>
+                      <p className="text-lg opacity-90 mb-1">
+                        {selectedService?.title}
+                      </p>
+                      <p className="text-sm opacity-75">
+                        Price Range: {selectedService?.priceRange}
+                      </p>
+                    </div>
+
+                    {/* Form */}
+                    <ContactForm
+                      isQuotation={true}
+                      defaultServiceType={selectedService?.title}
+                      defaultSource="SERVICES_QUOTE"
+                      onSuccess={() => {
+                        // Form will show success message, we can optionally close after a delay
+                        setTimeout(() => {
+                          setExpandedId(null);
+                        }, 3000);
+                      }}
+                    />
+                  </div>
+                </div>
+              </ExpandableScreenContent>
+            </ExpandableScreen>
+          );
+        })}
       </div>
 
       <div className="mt-12 rounded-lg border bg-muted/50 p-8 text-center">

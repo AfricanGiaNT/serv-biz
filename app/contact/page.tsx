@@ -3,19 +3,32 @@
 import { Phone, Mail, MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import ContactForm from "@/components/ContactForm";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function ContactPage() {
+function ContactPageContent() {
+  const searchParams = useSearchParams();
+  const isQuotation = searchParams.get('quotation') === 'true';
+  const serviceType = searchParams.get('service');
+
   return (
     <div className="container px-4 py-12 md:py-16">
       <div className="mx-auto max-w-4xl">
         {/* Header */}
         <div className="mb-12 text-center">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl mb-4">
-            Get In Touch
+            {isQuotation ? 'Request a Quotation' : 'Get In Touch'}
           </h1>
           <p className="text-lg text-muted-foreground">
-            Have a plumbing issue? Need a quote? We&apos;re here to help!
+            {isQuotation 
+              ? "Fill out the form below and we'll provide you with a detailed quotation within 24 hours."
+              : "Have a plumbing issue? Need a quote? We're here to help!"}
           </p>
+          {isQuotation && serviceType && (
+            <p className="text-sm text-primary font-medium mt-2">
+              Service: {decodeURIComponent(serviceType)}
+            </p>
+          )}
         </div>
 
         {/* Contact Information - Compact Top Section */}
@@ -61,10 +74,35 @@ export default function ContactPage() {
 
         {/* Contact Form */}
         <div className="max-w-2xl mx-auto">
-          <ContactForm />
+          <ContactForm 
+            isQuotation={isQuotation}
+            defaultServiceType={serviceType ? decodeURIComponent(serviceType) : undefined}
+            defaultSource={isQuotation ? 'SERVICES_QUOTE' : 'CONTACT_FORM'}
+          />
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ContactPage() {
+  return (
+    <Suspense fallback={
+      <div className="container px-4 py-12 md:py-16">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-12 text-center">
+            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl mb-4">
+              Get In Touch
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              Have a plumbing issue? Need a quote? We&apos;re here to help!
+            </p>
+          </div>
+        </div>
+      </div>
+    }>
+      <ContactPageContent />
+    </Suspense>
   );
 }
 

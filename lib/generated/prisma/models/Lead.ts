@@ -43,6 +43,8 @@ export type LeadMinAggregateOutputType = {
   urgency: $Enums.Urgency | null
   priority: number | null
   source: $Enums.LeadSource | null
+  serviceType: string | null
+  attachmentUrl: string | null
   location: string | null
   serviceArea: string | null
   message: string | null
@@ -62,6 +64,8 @@ export type LeadMaxAggregateOutputType = {
   urgency: $Enums.Urgency | null
   priority: number | null
   source: $Enums.LeadSource | null
+  serviceType: string | null
+  attachmentUrl: string | null
   location: string | null
   serviceArea: string | null
   message: string | null
@@ -81,6 +85,8 @@ export type LeadCountAggregateOutputType = {
   urgency: number
   priority: number
   source: number
+  serviceType: number
+  attachmentUrl: number
   location: number
   serviceArea: number
   message: number
@@ -110,6 +116,8 @@ export type LeadMinAggregateInputType = {
   urgency?: true
   priority?: true
   source?: true
+  serviceType?: true
+  attachmentUrl?: true
   location?: true
   serviceArea?: true
   message?: true
@@ -129,6 +137,8 @@ export type LeadMaxAggregateInputType = {
   urgency?: true
   priority?: true
   source?: true
+  serviceType?: true
+  attachmentUrl?: true
   location?: true
   serviceArea?: true
   message?: true
@@ -148,6 +158,8 @@ export type LeadCountAggregateInputType = {
   urgency?: true
   priority?: true
   source?: true
+  serviceType?: true
+  attachmentUrl?: true
   location?: true
   serviceArea?: true
   message?: true
@@ -254,6 +266,8 @@ export type LeadGroupByOutputType = {
   urgency: $Enums.Urgency
   priority: number
   source: $Enums.LeadSource
+  serviceType: string | null
+  attachmentUrl: string | null
   location: string | null
   serviceArea: string | null
   message: string | null
@@ -296,6 +310,8 @@ export type LeadWhereInput = {
   urgency?: Prisma.EnumUrgencyFilter<"Lead"> | $Enums.Urgency
   priority?: Prisma.IntFilter<"Lead"> | number
   source?: Prisma.EnumLeadSourceFilter<"Lead"> | $Enums.LeadSource
+  serviceType?: Prisma.StringNullableFilter<"Lead"> | string | null
+  attachmentUrl?: Prisma.StringNullableFilter<"Lead"> | string | null
   location?: Prisma.StringNullableFilter<"Lead"> | string | null
   serviceArea?: Prisma.StringNullableFilter<"Lead"> | string | null
   message?: Prisma.StringNullableFilter<"Lead"> | string | null
@@ -316,6 +332,8 @@ export type LeadOrderByWithRelationInput = {
   urgency?: Prisma.SortOrder
   priority?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   location?: Prisma.SortOrderInput | Prisma.SortOrder
   serviceArea?: Prisma.SortOrderInput | Prisma.SortOrder
   message?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -339,6 +357,8 @@ export type LeadWhereUniqueInput = Prisma.AtLeast<{
   urgency?: Prisma.EnumUrgencyFilter<"Lead"> | $Enums.Urgency
   priority?: Prisma.IntFilter<"Lead"> | number
   source?: Prisma.EnumLeadSourceFilter<"Lead"> | $Enums.LeadSource
+  serviceType?: Prisma.StringNullableFilter<"Lead"> | string | null
+  attachmentUrl?: Prisma.StringNullableFilter<"Lead"> | string | null
   location?: Prisma.StringNullableFilter<"Lead"> | string | null
   serviceArea?: Prisma.StringNullableFilter<"Lead"> | string | null
   message?: Prisma.StringNullableFilter<"Lead"> | string | null
@@ -359,6 +379,8 @@ export type LeadOrderByWithAggregationInput = {
   urgency?: Prisma.SortOrder
   priority?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   location?: Prisma.SortOrderInput | Prisma.SortOrder
   serviceArea?: Prisma.SortOrderInput | Prisma.SortOrder
   message?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -386,6 +408,8 @@ export type LeadScalarWhereWithAggregatesInput = {
   urgency?: Prisma.EnumUrgencyWithAggregatesFilter<"Lead"> | $Enums.Urgency
   priority?: Prisma.IntWithAggregatesFilter<"Lead"> | number
   source?: Prisma.EnumLeadSourceWithAggregatesFilter<"Lead"> | $Enums.LeadSource
+  serviceType?: Prisma.StringNullableWithAggregatesFilter<"Lead"> | string | null
+  attachmentUrl?: Prisma.StringNullableWithAggregatesFilter<"Lead"> | string | null
   location?: Prisma.StringNullableWithAggregatesFilter<"Lead"> | string | null
   serviceArea?: Prisma.StringNullableWithAggregatesFilter<"Lead"> | string | null
   message?: Prisma.StringNullableWithAggregatesFilter<"Lead"> | string | null
@@ -405,6 +429,8 @@ export type LeadCreateInput = {
   urgency?: $Enums.Urgency
   priority?: number
   source?: $Enums.LeadSource
+  serviceType?: string | null
+  attachmentUrl?: string | null
   location?: string | null
   serviceArea?: string | null
   message?: string | null
@@ -425,6 +451,8 @@ export type LeadUncheckedCreateInput = {
   urgency?: $Enums.Urgency
   priority?: number
   source?: $Enums.LeadSource
+  serviceType?: string | null
+  attachmentUrl?: string | null
   location?: string | null
   serviceArea?: string | null
   message?: string | null
@@ -445,6 +473,8 @@ export type LeadUpdateInput = {
   urgency?: Prisma.EnumUrgencyFieldUpdateOperationsInput | $Enums.Urgency
   priority?: Prisma.IntFieldUpdateOperationsInput | number
   source?: Prisma.EnumLeadSourceFieldUpdateOperationsInput | $Enums.LeadSource
+  serviceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceArea?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -465,6 +495,8 @@ export type LeadUncheckedUpdateInput = {
   urgency?: Prisma.EnumUrgencyFieldUpdateOperationsInput | $Enums.Urgency
   priority?: Prisma.IntFieldUpdateOperationsInput | number
   source?: Prisma.EnumLeadSourceFieldUpdateOperationsInput | $Enums.LeadSource
+  serviceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceArea?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -485,6 +517,8 @@ export type LeadCreateManyInput = {
   urgency?: $Enums.Urgency
   priority?: number
   source?: $Enums.LeadSource
+  serviceType?: string | null
+  attachmentUrl?: string | null
   location?: string | null
   serviceArea?: string | null
   message?: string | null
@@ -504,6 +538,8 @@ export type LeadUpdateManyMutationInput = {
   urgency?: Prisma.EnumUrgencyFieldUpdateOperationsInput | $Enums.Urgency
   priority?: Prisma.IntFieldUpdateOperationsInput | number
   source?: Prisma.EnumLeadSourceFieldUpdateOperationsInput | $Enums.LeadSource
+  serviceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceArea?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -523,6 +559,8 @@ export type LeadUncheckedUpdateManyInput = {
   urgency?: Prisma.EnumUrgencyFieldUpdateOperationsInput | $Enums.Urgency
   priority?: Prisma.IntFieldUpdateOperationsInput | number
   source?: Prisma.EnumLeadSourceFieldUpdateOperationsInput | $Enums.LeadSource
+  serviceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceArea?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -542,6 +580,8 @@ export type LeadCountOrderByAggregateInput = {
   urgency?: Prisma.SortOrder
   priority?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrder
+  attachmentUrl?: Prisma.SortOrder
   location?: Prisma.SortOrder
   serviceArea?: Prisma.SortOrder
   message?: Prisma.SortOrder
@@ -565,6 +605,8 @@ export type LeadMaxOrderByAggregateInput = {
   urgency?: Prisma.SortOrder
   priority?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrder
+  attachmentUrl?: Prisma.SortOrder
   location?: Prisma.SortOrder
   serviceArea?: Prisma.SortOrder
   message?: Prisma.SortOrder
@@ -584,6 +626,8 @@ export type LeadMinOrderByAggregateInput = {
   urgency?: Prisma.SortOrder
   priority?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrder
+  attachmentUrl?: Prisma.SortOrder
   location?: Prisma.SortOrder
   serviceArea?: Prisma.SortOrder
   message?: Prisma.SortOrder
@@ -666,6 +710,8 @@ export type LeadCreateWithoutConversationsInput = {
   urgency?: $Enums.Urgency
   priority?: number
   source?: $Enums.LeadSource
+  serviceType?: string | null
+  attachmentUrl?: string | null
   location?: string | null
   serviceArea?: string | null
   message?: string | null
@@ -685,6 +731,8 @@ export type LeadUncheckedCreateWithoutConversationsInput = {
   urgency?: $Enums.Urgency
   priority?: number
   source?: $Enums.LeadSource
+  serviceType?: string | null
+  attachmentUrl?: string | null
   location?: string | null
   serviceArea?: string | null
   message?: string | null
@@ -720,6 +768,8 @@ export type LeadUpdateWithoutConversationsInput = {
   urgency?: Prisma.EnumUrgencyFieldUpdateOperationsInput | $Enums.Urgency
   priority?: Prisma.IntFieldUpdateOperationsInput | number
   source?: Prisma.EnumLeadSourceFieldUpdateOperationsInput | $Enums.LeadSource
+  serviceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceArea?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -739,6 +789,8 @@ export type LeadUncheckedUpdateWithoutConversationsInput = {
   urgency?: Prisma.EnumUrgencyFieldUpdateOperationsInput | $Enums.Urgency
   priority?: Prisma.IntFieldUpdateOperationsInput | number
   source?: Prisma.EnumLeadSourceFieldUpdateOperationsInput | $Enums.LeadSource
+  serviceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceArea?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -789,6 +841,8 @@ export type LeadSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   urgency?: boolean
   priority?: boolean
   source?: boolean
+  serviceType?: boolean
+  attachmentUrl?: boolean
   location?: boolean
   serviceArea?: boolean
   message?: boolean
@@ -810,6 +864,8 @@ export type LeadSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   urgency?: boolean
   priority?: boolean
   source?: boolean
+  serviceType?: boolean
+  attachmentUrl?: boolean
   location?: boolean
   serviceArea?: boolean
   message?: boolean
@@ -829,6 +885,8 @@ export type LeadSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   urgency?: boolean
   priority?: boolean
   source?: boolean
+  serviceType?: boolean
+  attachmentUrl?: boolean
   location?: boolean
   serviceArea?: boolean
   message?: boolean
@@ -848,6 +906,8 @@ export type LeadSelectScalar = {
   urgency?: boolean
   priority?: boolean
   source?: boolean
+  serviceType?: boolean
+  attachmentUrl?: boolean
   location?: boolean
   serviceArea?: boolean
   message?: boolean
@@ -858,7 +918,7 @@ export type LeadSelectScalar = {
   updatedAt?: boolean
 }
 
-export type LeadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "phone" | "email" | "status" | "urgency" | "priority" | "source" | "location" | "serviceArea" | "message" | "notes" | "followUpSent" | "followUpAt" | "createdAt" | "updatedAt", ExtArgs["result"]["lead"]>
+export type LeadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "phone" | "email" | "status" | "urgency" | "priority" | "source" | "serviceType" | "attachmentUrl" | "location" | "serviceArea" | "message" | "notes" | "followUpSent" | "followUpAt" | "createdAt" | "updatedAt", ExtArgs["result"]["lead"]>
 export type LeadInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   conversations?: boolean | Prisma.Lead$conversationsArgs<ExtArgs>
   _count?: boolean | Prisma.LeadCountOutputTypeDefaultArgs<ExtArgs>
@@ -880,6 +940,8 @@ export type $LeadPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     urgency: $Enums.Urgency
     priority: number
     source: $Enums.LeadSource
+    serviceType: string | null
+    attachmentUrl: string | null
     location: string | null
     serviceArea: string | null
     message: string | null
@@ -1320,6 +1382,8 @@ export interface LeadFieldRefs {
   readonly urgency: Prisma.FieldRef<"Lead", 'Urgency'>
   readonly priority: Prisma.FieldRef<"Lead", 'Int'>
   readonly source: Prisma.FieldRef<"Lead", 'LeadSource'>
+  readonly serviceType: Prisma.FieldRef<"Lead", 'String'>
+  readonly attachmentUrl: Prisma.FieldRef<"Lead", 'String'>
   readonly location: Prisma.FieldRef<"Lead", 'String'>
   readonly serviceArea: Prisma.FieldRef<"Lead", 'String'>
   readonly message: Prisma.FieldRef<"Lead", 'String'>

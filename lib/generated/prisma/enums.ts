@@ -33,8 +33,11 @@ export type Urgency = (typeof Urgency)[keyof typeof Urgency]
 
 export const LeadSource = {
   CHATBOT: 'CHATBOT',
+  WEBSITE_CHAT: 'WEBSITE_CHAT',
   CONTACT_FORM: 'CONTACT_FORM',
-  TELEGRAM: 'TELEGRAM'
+  SERVICES_QUOTE: 'SERVICES_QUOTE',
+  TELEGRAM: 'TELEGRAM',
+  MANUAL: 'MANUAL'
 } as const
 
 export type LeadSource = (typeof LeadSource)[keyof typeof LeadSource]

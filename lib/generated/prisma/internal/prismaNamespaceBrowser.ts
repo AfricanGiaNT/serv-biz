@@ -82,6 +82,8 @@ export const LeadScalarFieldEnum = {
   urgency: 'urgency',
   priority: 'priority',
   source: 'source',
+  serviceType: 'serviceType',
+  attachmentUrl: 'attachmentUrl',
   location: 'location',
   serviceArea: 'serviceArea',
   message: 'message',
