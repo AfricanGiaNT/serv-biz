@@ -169,7 +169,12 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      ({ name, phone, email, message, serviceType, source: sourceParam } = validationResult.data);
+      const { name: nameVal, phone: phoneVal, email: emailVal, message: messageVal, serviceType: serviceTypeVal, source: sourceParam } = validationResult.data;
+      name = nameVal;
+      phone = phoneVal;
+      email = emailVal;
+      message = messageVal;
+      serviceType = serviceTypeVal;
       if (sourceParam) {
         source = sourceParam;
       }
