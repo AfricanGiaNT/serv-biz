@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Upload, X, MessageSquare, FileText } from "lucide-react";
@@ -284,10 +285,13 @@ export default function ContactForm({
             <div className="mt-1">
               {imagePreview ? (
                 <div className="relative bg-white rounded-lg p-2 border-2 border-gray-300">
-                  <img
+                  <Image
                     src={imagePreview}
                     alt="Preview"
-                    className="max-h-48 rounded-md mx-auto"
+                    width={400}
+                    height={192}
+                    className="max-h-48 rounded-md mx-auto object-contain"
+                    unoptimized
                   />
                   <button
                     type="button"
