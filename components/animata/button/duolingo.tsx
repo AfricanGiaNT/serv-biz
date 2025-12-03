@@ -1,9 +1,10 @@
 import Link from "next/link";
+import { MouseEvent } from "react";
 
 interface DuolingoButtonProps {
   children: React.ReactNode;
   href?: string;
-  onClick?: () => void;
+  onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
   className?: string;
 }
 
